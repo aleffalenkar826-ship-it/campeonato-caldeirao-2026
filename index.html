@@ -31,6 +31,19 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .notice{padding:12px;border-radius:10px;background:#172f49;color:#d5e3f2;margin:12px 0;font-size:13px;line-height:1.5}
 .hidden{display:none}.empty{padding:18px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:10px}
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.hero{padding:20px}.hero img{width:92px;height:92px}.hero p{font-size:14px}}
+
+.rosters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.roster-team{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--text);cursor:pointer}
+.roster-team h3{margin:0 0 6px}.roster-team small{color:var(--muted)}
+.roster-content{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.roster-team.open .roster-content{display:block}
+.roster-player{padding:10px 0;border-bottom:1px solid var(--line)}
+.roster-player:last-child{border-bottom:0}
+.player-stats{font-size:13px;color:var(--muted);margin-top:4px}
+.stats-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.stats-editor label{font-size:12px;color:var(--muted)}
+.stats-editor input{width:100%;box-sizing:border-box}
+@media(max-width:520px){.stats-editor{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -61,6 +74,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <nav id="nav">
 <button class="active" data-page="inicio">🏠 Visão geral</button>
 <button data-page="equipes">🛡️ Equipes</button>
+<button data-page="elencos">👥 Elencos</button>
 <button data-page="jogadores">👟 Jogadores</button>
 <button data-page="partidas">⚽ Partidas</button>
 <button data-page="tabela">🏆 Classificação</button>
@@ -84,6 +98,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <div class="card" style="margin-top:14px"><h3>Equipes cadastradas</h3><div id="teamsList" class="empty">Carregando...</div></div>
 </section>
 
+<section id="elencos" class="page hidden">
+<h2>Elencos das equipes</h2>
+<p class="muted">Selecione uma equipe para consultar seus jogadores.</p>
+<div id="rostersList" class="rosters-grid"></div>
+</section>
+
 <section id="jogadores" class="page hidden">
 <h2>Cadastro de jogadores</h2><div class="card"><form id="playerForm"><label>Nome do jogador</label><input id="playerName" required placeholder="Nome completo"><label>Equipe</label><select id="playerTeam" required><option value="">Selecione a equipe</option></select><div class="grid"><div><label>Número da camisa</label><input id="playerNumber" type="number" min="0" placeholder="Ex.: 10"></div><div><label>Posição</label><select id="playerPosition"><option>Goleiro</option><option>Defensor</option><option>Meio-campo</option><option>Atacante</option></select></div></div><button class="primary">Salvar jogador</button></form></div>
 <div class="card" style="margin-top:14px"><h3>Jogadores cadastrados</h3><div id="playersList" class="empty">Carregando...</div></div>
@@ -104,12 +124,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyAjN3czKCY9ks5SQ4wJuGKSF1H4z2Zf_M0",
-  authDomain: "campeonato-caldeirao-2026.firebaseapp.com",
-  projectId: "campeonato-caldeirao-2026",
-  storageBucket: "campeonato-caldeirao-2026.firebasestorage.app",
-  messagingSenderId: "1042436430700",
-  appId: "1:1042436430700:web:1b0dc35294b56295463149"
+ apiKey: "AIzaSyAzx2QbRV1XHkvD16Ee-BHZHVjKG6XsLu0",
+ authDomain: "campeonato-caldeirao-2026.firebaseapp.com",
+ projectId: "campeonato-caldeirao-2026",
+ storageBucket: "campeonato-caldeirao-2026.firebasestorage.app",
+ messagingSenderId: "1042436430700",
+ appId: "1:1042436430700:web:1b0dc35294b56295463149"
 };
 const ADMIN_UID = "XBQ4vRPnZqhoq2gObGPin9hxeRl2";
 let db=null, auth=null, teams=[], players=[], matches=[], isAdmin=false;
@@ -129,6 +149,26 @@ function render(){
  $('countGoals').textContent=matches.reduce((a,m)=>a+(Number(m.gols_casa)||0)+(Number(m.gols_fora)||0),0);
  $('teamsList').innerHTML=teams.length?teams.map(t=>`<div class="item"><span><b>${esc(t.nome)}</b><br><small class="muted">${t.id}</small></span><button class="danger" onclick="deleteDoc('equipes','${t.id}')">Excluir</button></div>`).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
  $('playersList').innerHTML=players.length?players.map(p=>`<div class="item"><span><b>${esc(p.nome)}</b><br><small class="muted">${esc(teamName(p.equipe_id))} · Camisa ${esc(p.numero_camisa??'—')}</small></span><button class="danger" onclick="deleteDoc('jogadores','${p.id}')">Excluir</button></div>`).join(''):'<div class="empty">Nenhum jogador cadastrado.</div>';
+ $('rostersList').innerHTML=teams.length?teams.map(t=>{
+   const squad=players.filter(p=>p.equipe_id===t.id);
+   return `<div class="roster-team" id="roster-${t.id}">
+     <button type="button" style="all:unset;display:block;width:100%;cursor:pointer" onclick="toggleRoster('${t.id}')">
+       <h3>🛡️ ${esc(t.nome)}</h3><small>${squad.length} jogador(es) · Toque para ver o elenco</small>
+     </button>
+     <div class="roster-content">${squad.length?squad.map(p=>`<div class="roster-player">
+       <b>${esc(p.nome)}</b><div class="player-stats">Camisa ${esc(p.numero_camisa??'—')} · ${esc(p.posicao||'Posição não informada')}</div>
+       <div class="player-stats">⚽ ${Number(p.gols)||0} gols · 🟨 ${Number(p.cartoes_amarelos)||0} amarelos · 🟥 ${Number(p.cartoes_vermelhos)||0} vermelhos · 🎯 ${Number(p.assistencias)||0} assistências</div>
+       ${isAdmin?`<div class="stats-editor">
+         <label>Gols<input type="number" min="0" id="gols-${p.id}" value="${Number(p.gols)||0}"></label>
+         <label>Amarelos<input type="number" min="0" id="amarelos-${p.id}" value="${Number(p.cartoes_amarelos)||0}"></label>
+         <label>Vermelhos<input type="number" min="0" id="vermelhos-${p.id}" value="${Number(p.cartoes_vermelhos)||0}"></label>
+         <label>Assistências<input type="number" min="0" id="assistencias-${p.id}" value="${Number(p.assistencias)||0}"></label>
+         <label>Jogos<input type="number" min="0" id="jogos-${p.id}" value="${Number(p.jogos)||0}"></label>
+       </div><button type="button" class="primary" style="margin-top:8px" onclick="savePlayerStats('${p.id}')">Salvar alterações</button>`:''}
+     </div>`).join(''):'<div class="empty">Nenhum jogador cadastrado nesta equipe.</div>'}</div>
+   </div>`;
+ }).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
+
  $('matchesList').innerHTML=matches.length?matches.map(m=>`<div class="item"><span><b>${esc(teamName(m.equipe_casa))} x ${esc(teamName(m.equipe_fora))}</b><br><small class="muted">${esc(m.data||'Data não definida')} ${esc(m.horario||'')}</small></span><span class="row">${m.status==='finalizada'?`${m.gols_casa} x ${m.gols_fora}`:'Agendada'} <button onclick="finishMatch('${m.id}')">Resultado</button><button class="danger" onclick="deleteDoc('partidas','${m.id}')">Excluir</button></span></div>`).join(''):'<div class="empty">Nenhuma partida cadastrada.</div>';
  const rows=teams.map(t=>{let s={id:t.id,nome:t.nome,pts:0,j:0,v:0,e:0,d:0,gp:0,gc:0};matches.filter(m=>m.status==='finalizada'&&(m.equipe_casa===t.id||m.equipe_fora===t.id)).forEach(m=>{let home=m.equipe_casa===t.id,gf=Number(home?m.gols_casa:m.gols_fora)||0,ga=Number(home?m.gols_fora:m.gols_casa)||0;s.j++;s.gp+=gf;s.gc+=ga;if(gf>ga){s.v++;s.pts+=3}else if(gf===ga){s.e++;s.pts++}else s.d++});return s}).sort((a,b)=>b.pts-a.pts||(b.gp-b.gc)-(a.gp-a.gc)||b.gp-a.gp);
  $('standings').innerHTML=rows.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.nome)}</td><td>${s.pts}</td><td>${s.j}</td><td>${s.v}</td><td>${s.e}</td><td>${s.d}</td><td>${s.gp}</td><td>${s.gc}</td><td>${s.gp-s.gc}</td></tr>`).join('');
@@ -137,6 +177,26 @@ function render(){
  const upcoming=matches.filter(m=>m.status!=='finalizada').slice(0,5);
  $('nextGames').innerHTML=upcoming.length?upcoming.map(m=>`<div class="item"><b>${esc(teamName(m.equipe_casa))} x ${esc(teamName(m.equipe_fora))}</b><small class="muted">${esc(m.data||'')}</small></div>`).join(''):'Os jogos cadastrados serão exibidos aqui.';
  refreshSelects();
+}
+function toggleRoster(id){
+ const card=$('roster-'+id);if(card)card.classList.toggle('open');
+}
+async function savePlayerStats(id){
+ if(!isAdmin){alert('Somente o administrador pode alterar estatísticas.');return}
+ const fields={gols:'gols',amarelos:'cartoes_amarelos',vermelhos:'cartoes_vermelhos',assistencias:'assistencias',jogos:'jogos'};
+ const update={};
+ for(const [inputId,field] of Object.entries(fields)){
+   const value=Number($(`${inputId}-${id}`).value);
+   if(!Number.isInteger(value)||value<0){alert('Informe apenas números inteiros iguais ou maiores que zero.');return}
+   update[field]=value;
+ }
+ try{
+   await db.collection('jogadores').doc(id).update(update);
+   await loadAll();
+   const team=players.find(p=>p.id===id)?.equipe_id;
+   if(team){const card=$('roster-'+team);if(card)card.classList.add('open');}
+   alert('Estatísticas do jogador atualizadas.');
+ }catch(e){alert('Não foi possível atualizar o jogador: '+e.message)}
 }
 async function loadAll(){
  if(!db)return;
@@ -182,6 +242,7 @@ if(auth){
  auth.onAuthStateChanged(user=>{
    isAdmin=!!user && user.uid===ADMIN_UID;
    updateAdminUI();
+   if(teams.length || players.length) render();
  });
 }
 
