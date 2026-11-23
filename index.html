@@ -44,6 +44,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 .stats-editor label{font-size:12px;color:var(--muted)}
 .stats-editor input{width:100%;box-sizing:border-box}
 @media(max-width:520px){.stats-editor{grid-template-columns:1fr 1fr}}
+
+.admin-access-button{position:fixed;right:16px;bottom:18px;z-index:20;width:48px;height:48px;border-radius:50%;font-size:21px;background:#10243a;border:2px solid var(--gold);box-shadow:0 4px 16px #0008;padding:0}
+.admin-modal{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:18px}
+.admin-modal.hidden{display:none}
+.admin-modal-backdrop{position:absolute;inset:0;background:#000b}
+.admin-modal-card{position:relative;width:min(100%,420px);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--gold);border-radius:16px;padding:22px;box-shadow:0 18px 55px #0009}
+.admin-modal-card h3{margin:0 34px 16px 0}
+.admin-modal-close{position:absolute;right:12px;top:10px;width:34px;height:34px;padding:0;font-size:24px;line-height:1;background:#18334f}
+.admin-modal-card form button{width:100%;margin-top:6px}
 </style>
 </head>
 <body>
@@ -53,21 +62,26 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <div class="season">TEMPORADA 2026</div>
 </header>
 
-<div class="card" id="adminPanel" style="margin:16px 0;border:1px solid #b99042">
-  <h3>🔐 Acesso do administrador</h3>
-  <div id="loginArea">
-    <p class="muted">Entre com o e-mail e a senha cadastrados em Firebase Authentication para liberar os cadastros e alterações.</p>
-    <form id="loginForm">
-      <label>E-mail do administrador</label>
-      <input id="adminEmail" type="email" autocomplete="username" required placeholder="Seu e-mail">
-      <label>Senha</label>
-      <input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Sua senha">
-      <button class="primary" type="submit">Entrar como administrador</button>
-    </form>
-  </div>
-  <div id="loggedArea" class="hidden">
-    <p id="adminStatus" class="muted"></p>
-    <button id="logoutButton" type="button">Sair</button>
+<button id="adminAccessButton" class="admin-access-button" type="button" aria-label="Acesso do administrador" title="Acesso do administrador">🔐</button>
+<div id="adminModal" class="admin-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+  <div class="admin-modal-backdrop" id="adminModalBackdrop"></div>
+  <div class="admin-modal-card">
+    <button id="closeAdminModal" class="admin-modal-close" type="button" aria-label="Fechar">×</button>
+    <h3 id="adminModalTitle">🔐 Acesso do administrador</h3>
+    <div id="loginArea">
+      <p class="muted">Entre com o e-mail e a senha cadastrados para liberar os cadastros e alterações.</p>
+      <form id="loginForm">
+        <label>E-mail do administrador</label>
+        <input id="adminEmail" type="email" autocomplete="username" required placeholder="Seu e-mail">
+        <label>Senha</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Sua senha">
+        <button class="primary" type="submit">Entrar como administrador</button>
+      </form>
+    </div>
+    <div id="loggedArea" class="hidden">
+      <p id="adminStatus" class="muted"></p>
+      <button id="logoutButton" type="button">Sair</button>
+    </div>
   </div>
 </div>
 
@@ -224,6 +238,13 @@ function updateAdminUI(){
  document.querySelectorAll('#teamForm input, #teamForm button, #playerForm input, #playerForm select, #playerForm button, #matchForm input, #matchForm select, #matchForm button').forEach(el=>el.disabled=!isAdmin);
  document.querySelectorAll('.danger, button[onclick^="finishMatch"]').forEach(el=>el.style.display=isAdmin?'':'none');
 }
+$('adminAccessButton').addEventListener('click',()=>{
+ $('adminModal').classList.remove('hidden');
+});
+function closeAdminModal(){$('adminModal').classList.add('hidden');}
+$('closeAdminModal').addEventListener('click',closeAdminModal);
+$('adminModalBackdrop').addEventListener('click',closeAdminModal);
+
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();
  try{
@@ -231,6 +252,7 @@ $('loginForm').addEventListener('submit',async e=>{
    $('adminPassword').value='';
    isAdmin=auth.currentUser && auth.currentUser.uid===ADMIN_UID;
    updateAdminUI();
+   if(isAdmin) closeAdminModal();
    if(!isAdmin) alert('Esta conta não é a conta autorizada como administradora.');
  }catch(err){alert('Não foi possível entrar: '+err.message);}
 });
