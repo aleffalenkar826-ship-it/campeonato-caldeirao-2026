@@ -33,7 +33,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.hero{padding:20px}.hero img{width:92px;height:92px}.hero p{font-size:14px}}
 
 .rosters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.roster-team{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--text);cursor:pointer}
+.team-crest{width:58px;height:58px;object-fit:contain;border-radius:12px;background:#fff;padding:4px;border:1px solid var(--gold);flex-shrink:0}.team-heading{display:flex;align-items:center;gap:12px}.team-list-crest{width:42px;height:42px;object-fit:contain;border-radius:9px;background:#fff;padding:3px;vertical-align:middle;margin-right:10px}.roster-team{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--text);cursor:pointer}
 .roster-team h3{margin:0 0 6px}.roster-team small{color:var(--muted)}
 .roster-content{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .roster-team.open .roster-content{display:block}
@@ -108,7 +108,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 
 <section id="equipes" class="page hidden">
 <h2>Cadastro de equipes</h2><div class="notice">Cadastre quantas equipes participarem. O ID é criado automaticamente pelo aplicativo.</div>
-<div class="card"><form id="teamForm"><label>Nome da equipe</label><input id="teamName" required placeholder="Ex.: União FC"><label>Escudo (URL opcional)</label><input id="teamShield" placeholder="https://..."><button class="primary">Salvar equipe</button></form></div>
+<div class="card"><form id="teamForm"><label>Nome da equipe</label><input id="teamName" required placeholder="Ex.: União FC"><label>Escudo da equipe (imagem)</label><input id="teamShieldFile" type="file" accept="image/*"><small class="muted">Escolha a foto do escudo na galeria do tablet. Imagem de até 500 KB.</small><label>Ou endereço da imagem (opcional)</label><input id="teamShield" placeholder="https://..."><button class="primary">Salvar equipe</button></form></div>
 <div class="card" style="margin-top:14px"><h3>Equipes cadastradas</h3><div id="teamsList" class="empty">Carregando...</div></div>
 </section>
 
@@ -161,13 +161,13 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function render(){
  $('countTeams').textContent=teams.length;$('countPlayers').textContent=players.length;$('countMatches').textContent=matches.length;
  $('countGoals').textContent=matches.reduce((a,m)=>a+(Number(m.gols_casa)||0)+(Number(m.gols_fora)||0),0);
- $('teamsList').innerHTML=teams.length?teams.map(t=>`<div class="item"><span><b>${esc(t.nome)}</b><br><small class="muted">${t.id}</small></span><button class="danger" onclick="deleteDoc('equipes','${t.id}')">Excluir</button></div>`).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
+ $('teamsList').innerHTML=teams.length?teams.map(t=>`<div class="item"><span>${t.escudo?`<img class="team-list-crest" src="${esc(t.escudo)}" alt="Escudo ${esc(t.nome)}">`:''}<b>${esc(t.nome)}</b><br><small class="muted">${t.id}</small></span><button class="danger" onclick="deleteDoc('equipes','${t.id}')">Excluir</button></div>`).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
  $('playersList').innerHTML=players.length?players.map(p=>`<div class="item"><span><b>${esc(p.nome)}</b><br><small class="muted">${esc(teamName(p.equipe_id))} · Camisa ${esc(p.numero_camisa??'—')}</small></span><button class="danger" onclick="deleteDoc('jogadores','${p.id}')">Excluir</button></div>`).join(''):'<div class="empty">Nenhum jogador cadastrado.</div>';
  $('rostersList').innerHTML=teams.length?teams.map(t=>{
    const squad=players.filter(p=>p.equipe_id===t.id);
    return `<div class="roster-team" id="roster-${t.id}">
      <button type="button" style="all:unset;display:block;width:100%;cursor:pointer" onclick="toggleRoster('${t.id}')">
-       <h3>🛡️ ${esc(t.nome)}</h3><small>${squad.length} jogador(es) · Toque para ver o elenco</small>
+       <div class="team-heading">${t.escudo?`<img class="team-crest" src="${esc(t.escudo)}" alt="Escudo ${esc(t.nome)}">`:}<div><h3 style="margin:0 0 5px">${esc(t.nome)}</h3><small>${squad.length} jogador(es) · Toque para ver o elenco</small></div></div>
      </button>
      <div class="roster-content">${squad.length?squad.map(p=>`<div class="roster-player">
        <b>${esc(p.nome)}</b><div class="player-stats">Camisa ${esc(p.numero_camisa??'—')} · ${esc(p.posicao||'Posição não informada')}</div>
@@ -222,7 +222,27 @@ async function loadAll(){
 }
 async function deleteDoc(col,id){if(!isAdmin){alert('Apenas o administrador pode excluir.');return}if(!confirm('Confirma excluir este registro?'))return;try{await db.collection(col).doc(id).delete();await loadAll()}catch(e){alert('Não foi possível excluir: '+e.message)}}
 async function finishMatch(id){if(!isAdmin){alert('Apenas o administrador pode lançar resultados.');return}const m=matches.find(x=>x.id===id);let a=prompt('Gols de '+teamName(m.equipe_casa)+':',m.gols_casa??0);if(a===null)return;let b=prompt('Gols de '+teamName(m.equipe_fora)+':',m.gols_fora??0);if(b===null)return;if(!Number.isInteger(+a)||!Number.isInteger(+b)||+a<0||+b<0){alert('Informe gols válidos.');return}try{await db.collection('partidas').doc(id).update({gols_casa:+a,gols_fora:+b,status:'finalizada'});await loadAll()}catch(e){alert('Erro ao salvar resultado: '+e.message)}}
-$('teamForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin){alert('Entre como administrador para cadastrar.');return}try{await db.collection('equipes').add({nome:$('teamName').value.trim(),escudo:$('teamShield').value.trim(),jogos:0,vitorias:0,empates:0,derrotas:0,gols_pro:0,gols_contra:0,pontos:0});e.target.reset();await loadAll()}catch(x){alert('Erro ao salvar equipe: '+x.message)}});
+$('teamForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(!isAdmin){alert('Entre como administrador para cadastrar.');return}
+ try{
+   const file=$('teamShieldFile').files[0];
+   let shield=$('teamShield').value.trim();
+   if(file){
+     if(!file.type.startsWith('image/')){alert('Selecione um arquivo de imagem.');return}
+     if(file.size>500*1024){alert('A imagem deve ter no máximo 500 KB. Escolha uma versão menor do escudo.');return}
+     shield=await new Promise((resolve,reject)=>{
+       const reader=new FileReader();
+       reader.onload=()=>resolve(reader.result);
+       reader.onerror=()=>reject(new Error('Não foi possível ler a imagem.'));
+       reader.readAsDataURL(file);
+     });
+   }
+   await db.collection('equipes').add({nome:$('teamName').value.trim(),escudo:shield,jogos:0,vitorias:0,empates:0,derrotas:0,gols_pro:0,gols_contra:0,pontos:0});
+   e.target.reset();await loadAll();
+   alert('Equipe cadastrada com sucesso.');
+ }catch(x){alert('Erro ao salvar equipe: '+x.message)}
+});
 $('playerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin){alert('Entre como administrador para cadastrar.');return}try{await db.collection('jogadores').add({nome:$('playerName').value.trim(),equipe_id:$('playerTeam').value,numero_camisa:Number($('playerNumber').value)||0,posicao:$('playerPosition').value,gols:0,jogos:0,assistencias:0,cartoes_amarelos:0,cartoes_vermelhos:0});e.target.reset();await loadAll()}catch(x){alert('Erro ao salvar jogador: '+x.message)}});
 $('matchForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin){alert('Entre como administrador para cadastrar.');return}if($('homeTeam').value===$('awayTeam').value){alert('Escolha duas equipes diferentes.');return}try{await db.collection('partidas').add({equipe_casa:$('homeTeam').value,equipe_fora:$('awayTeam').value,data:$('matchDate').value,horario:$('matchTime').value,gols_casa:0,gols_fora:0,rodada:1,status:'agendada'});e.target.reset();await loadAll()}catch(x){alert('Erro ao salvar partida: '+x.message)}});
 
