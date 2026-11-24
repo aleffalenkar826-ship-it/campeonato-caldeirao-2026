@@ -137,15 +137,17 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
- apiKey: "AIzaSyAjN3czKCY9ks5SQ4wJuGKSF1H4z2Zf_M0",
- authDomain: "campeonato-caldeirao-2026.firebaseapp.com",
- projectId: "campeonato-caldeirao-2026",
- storageBucket: "campeonato-caldeirao-2026.firebasestorage.app",
- messagingSenderId: "1042436430700",
- appId: "1:1042436430700:web:1b0dc35294b56295463149"
+  apiKey: "AIzaSyDEk9cxWDXELD_BVqLR2-y0W65zwFhwHhY",
+  authDomain: "campeonato-caldeirao-202-5914d.firebaseapp.com",
+  projectId: "campeonato-caldeirao-202-5914d",
+  storageBucket: "campeonato-caldeirao-202-5914d.firebasestorage.app",
+  messagingSenderId: "1050505773332",
+  appId: "1:1050505773332:web:7c7123f16885ebe2298201",
+  measurementId: "G-H79NXWLN7N"
 };
-const ADMIN_UID = "XBQ4vRPnZqhoq2gObGPin9hxeRl2";
+const ADMIN_UID = "nOTZmY54b5b0m4ccKL1lwymhUT02";
 let db=null, auth=null, teams=[], players=[], matches=[], isAdmin=false;
 try { firebase.initializeApp(firebaseConfig); db=firebase.firestore(); auth=firebase.auth(); }
 catch(e){ document.getElementById('connection').textContent='Falha ao iniciar Firebase: '+e.message; }
