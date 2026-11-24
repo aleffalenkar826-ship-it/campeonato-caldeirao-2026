@@ -170,6 +170,7 @@ header.reference-header{display:block!important;width:100%;height:auto!important
 <button data-page="tabela"><span>▥</span>Classificação</button>
 <button data-page="artilharia"><span>🏅</span>Artilharia</button>
 <button data-page="cartoes"><span>🟨</span>Cartões</button>
+<button class="admin-only" data-page="editar-estatisticas"><span>✏️</span>Editar estatísticas</button>
 <button data-page="regulamento"><span>▤</span>Regulamento</button>
 <button data-page="informacoes"><span>ⓘ</span>Informações</button>
 <button type="button" data-page="admin"><span>⚙</span>Área Admin</button>
@@ -207,6 +208,23 @@ header.reference-header{display:block!important;width:100%;height:auto!important
 <section id="tabela" class="page hidden"><h2>Classificação</h2><div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Equipe</th><th>PTS</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody id="standings"></tbody></table></div></section>
 <section id="artilharia" class="page hidden"><h2>Artilharia</h2><div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Jogador</th><th>Equipe</th><th>Gols</th></tr></thead><tbody id="scorers"></tbody></table></div></section>
 <section id="cartoes" class="page hidden"><h2>Cartões</h2><div class="card"><div id="cardsList" class="empty">Nenhum cartão registrado.</div></div></section>
+<section id="editar-estatisticas" class="page hidden admin-only">
+<h2>Editar estatísticas</h2>
+<div class="card">
+<p class="muted">Selecione um jogador para atualizar os números do campeonato. As alterações serão salvas no cadastro do jogador.</p>
+<label for="statsPlayer">Jogador</label>
+<select id="statsPlayer"><option value="">Selecione um jogador</option></select>
+<div id="statsPlayerInfo" class="muted" style="margin:10px 0">Escolha um jogador para carregar as estatísticas.</div>
+<div class="stats-editor">
+<label>Gols<input type="number" min="0" step="1" id="adminStatGoals" value="0"></label>
+<label>Cartões amarelos<input type="number" min="0" step="1" id="adminStatYellow" value="0"></label>
+<label>Cartões vermelhos<input type="number" min="0" step="1" id="adminStatRed" value="0"></label>
+<label>Assistências<input type="number" min="0" step="1" id="adminStatAssists" value="0"></label>
+<label>Jogos disputados<input type="number" min="0" step="1" id="adminStatGames" value="0"></label>
+</div>
+<button class="primary" id="saveAdminStats" type="button" style="margin-top:12px">Salvar estatísticas</button>
+</div>
+</section>
 <section id="regulamento" class="page hidden"><h2>Regulamento</h2><div class="card"><p class="muted">Consulte aqui as regras oficiais do Campeonato Caldeirão 2026.</p><p>O regulamento será disponibilizado pela organização do campeonato.</p></div></section>
 <section id="informacoes" class="page hidden"><h2>Informações</h2><div class="card"><h3>Campeonato Caldeirão 2026</h3><p>Futebol de Areia - Ribeirãozinho do Maranhão.</p><p class="muted">Acompanhe equipes, jogadores, jogos, classificação, artilharia e disciplina.</p></div></section>
 <div class="notice" id="connection">Conectando ao Firebase...</div>
@@ -241,11 +259,14 @@ function updateAdminUI(){document.querySelectorAll('.admin-only').forEach(el=>el
 function teamName(id){return teams.find(t=>t.id===id)?.nome||'Equipe não encontrada';}
 function refreshSelects(){['playerTeam','homeTeam','awayTeam'].forEach(id=>{const el=$(id),old=el.value;el.innerHTML='<option value="">Selecione a equipe</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('');if(teams.some(t=>t.id===old))el.value=old;});}
 async function imageData(file){if(!file)return '';if(file.size>500*1024)throw new Error('A imagem deve ter no máximo 500 KB.');return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});}
+function refreshAdminStatsPlayers(){const el=$('statsPlayer');if(!el)return;const selected=el.value;el.innerHTML='<option value="">Selecione um jogador</option>'+players.slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(p=>`<option value="${p.id}">${esc(p.nome)} · ${esc(teamName(p.equipe_id))}</option>`).join('');if(players.some(p=>p.id===selected))el.value=selected;else el.value='';}
+function loadAdminStatsPlayer(){const id=$('statsPlayer')?.value;const p=players.find(x=>x.id===id);$('statsPlayerInfo').textContent=p?`${p.nome} · ${teamName(p.equipe_id)} · Camisa ${p.numero_camisa??'—'}`:'Escolha um jogador para carregar as estatísticas.';$('adminStatGoals').value=Number(p?.gols)||0;$('adminStatYellow').value=Number(p?.cartoes_amarelos)||0;$('adminStatRed').value=Number(p?.cartoes_vermelhos)||0;$('adminStatAssists').value=Number(p?.assistencias)||0;$('adminStatGames').value=Number(p?.jogos)||0;}
+window.saveAdminStats=async()=>{if(!isAdmin)return;const id=$('statsPlayer').value;if(!id){alert('Selecione um jogador.');return;}const fields={gols:'adminStatGoals',cartoes_amarelos:'adminStatYellow',cartoes_vermelhos:'adminStatRed',assistencias:'adminStatAssists',jogos:'adminStatGames'};const data={};for(const [key,field] of Object.entries(fields)){const value=$(field).value;if(value===''||!/^\\d+$/.test(value)){alert('Informe números inteiros iguais ou maiores que zero em todos os campos.');return;}data[key]=Number(value);}try{await db.collection('jogadores').doc(id).update(data);await loadAll();$('statsPlayer').value=id;loadAdminStatsPlayer();alert('Estatísticas atualizadas com sucesso!');}catch(e){alert('Erro ao salvar estatísticas: '+e.message);}};
 function render(){
  $('countTeams').textContent=teams.length;$('countPlayers').textContent=players.length;$('countMatches').textContent=matches.length;
  $('countGoals').textContent=matches.reduce((a,m)=>a+(Number(m.gols_casa)||0)+(Number(m.gols_fora)||0),0);
  const totalCards=players.reduce((a,p)=>a+(Number(p.cartoes_amarelos)||0)+(Number(p.cartoes_vermelhos)||0),0);
- $('countCards').textContent=totalCards;$('countScorers').textContent=players.filter(p=>(Number(p.gols)||0)>0).length;
+ $('countCards').textContent=totalCards;refreshAdminStatsPlayers();$('countScorers').textContent=players.filter(p=>(Number(p.gols)||0)>0).length;
  const upcomingFeatured=matches.filter(m=>m.status!=='finalizada').sort((a,b)=>(a.data||'').localeCompare(b.data||''))[0];
  const finishedFeatured=matches.filter(m=>m.status==='finalizada').slice().sort((a,b)=>(b.data||'').localeCompare(a.data||''))[0];
  const crest=id=>{const t=teams.find(x=>x.id===id);return t&&t.escudo?`<img src="${esc(t.escudo)}" alt="Escudo ${esc(t.nome)}">`: '<span style="font-size:54px">⚽</span>';};
@@ -300,6 +321,7 @@ window.editMatch=async id=>{if(!isAdmin)return;const m=matches.find(x=>x.id===id
 window.deleteDoc=async(col,id)=>{if(!isAdmin)return;if(!confirm('Confirma excluir este registro?'))return;try{await db.collection(col).doc(id).delete();await loadAll();}catch(e){alert('Erro ao excluir: '+e.message);}};
 window.savePlayerStats=async id=>{if(!isAdmin)return;const vals={gols:$('g-'+id).value,cartoes_amarelos:$('y-'+id).value,cartoes_vermelhos:$('r-'+id).value,assistencias:$('a-'+id).value,jogos:$('j-'+id).value};const data={};for(const [k,v] of Object.entries(vals)){if(!Number.isInteger(Number(v))||Number(v)<0){alert('Use números inteiros iguais ou maiores que zero.');return;}data[k]=Number(v);}try{await db.collection('jogadores').doc(id).update(data);await loadAll();alert('Estatísticas atualizadas.');}catch(e){alert(e.message);}};
 window.finishMatch=async id=>{if(!isAdmin)return;const m=matches.find(x=>x.id===id);if(!m)return;const a=prompt('Gols de '+teamName(m.equipe_casa));if(a===null)return;const b=prompt('Gols de '+teamName(m.equipe_fora));if(b===null)return;if(!/^\d+$/.test(a)||!/^\d+$/.test(b)){alert('Informe gols como números inteiros.');return;}try{await db.collection('partidas').doc(id).update({gols_casa:Number(a),gols_fora:Number(b),status:'finalizada'});await loadAll();}catch(e){alert('Erro ao salvar resultado: '+e.message);}};
+$('statsPlayer').addEventListener('change',loadAdminStatsPlayer);$('saveAdminStats').addEventListener('click',window.saveAdminStats);
 async function loadAll(){if(!db)return;connection('Carregando dados do campeonato...');try{const [t,p,m]=await Promise.all([db.collection('equipes').get(),db.collection('jogadores').get(),db.collection('partidas').get()]);teams=t.docs.map(d=>({id:d.id,...d.data()}));players=p.docs.map(d=>({id:d.id,...d.data()}));matches=m.docs.map(d=>({id:d.id,...d.data()}));render();connection('Conectado ao Firebase. Dados carregados.');}catch(e){connection('Erro ao carregar dados: '+e.message,true);console.error(e);}}
 $('teamForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;try{const file=$('teamShieldFile').files[0],shield=file?await imageData(file):$('teamShield').value.trim();await db.collection('equipes').add({nome:$('teamName').value.trim(),escudo:shield,criado_em:firebase.firestore.FieldValue.serverTimestamp()});e.target.reset();await loadAll();alert('Equipe cadastrada!');}catch(err){alert('Não foi possível cadastrar: '+err.message);}});
 $('playerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;try{await db.collection('jogadores').add({nome:$('playerName').value.trim(),equipe_id:$('playerTeam').value,numero_camisa:$('playerNumber').value?Number($('playerNumber').value):null,posicao:$('playerPosition').value,gols:0,cartoes_amarelos:0,cartoes_vermelhos:0,assistencias:0,jogos:0});e.target.reset();await loadAll();alert('Jogador cadastrado!');}catch(err){alert('Não foi possível cadastrar: '+err.message);}});
