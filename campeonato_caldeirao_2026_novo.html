@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campeonato Caldeirão 2026</title>
+<style>
+:root{--bg:#07111f;--panel:#10243a;--panel2:#132d49;--line:#294563;--gold:#f4c451;--text:#f5f7fb;--muted:#9eb0c5;--blue:#1b4f80;--red:#7a3544}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+header{min-height:72px;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#091727;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.logo{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);display:none}.brand{font-weight:800;letter-spacing:.4px}.season{margin-left:auto;color:var(--gold);border:1px solid #80682e;border-radius:20px;padding:9px 13px;font-size:12px;font-weight:bold}
+nav{display:flex;gap:8px;padding:12px 16px;overflow:auto;background:#0a192a;border-bottom:1px solid var(--line);position:sticky;top:72px;z-index:4}
+nav button{white-space:nowrap;background:transparent;color:#c6d3e2;border:1px solid var(--line);padding:10px 14px;border-radius:10px}
+nav button.active,button.primary{background:var(--blue);color:white;border-color:#3b76ad}
+main{max-width:1100px;margin:22px auto;padding:0 16px}
+.hero{background:linear-gradient(115deg,#102944,#1c4b78);border:1px solid #315a7e;border-radius:22px;padding:28px;display:flex;align-items:center;gap:22px;min-height:210px}
+.hero h1{font-size:clamp(26px,5vw,42px);line-height:1.05;margin:8px 0 14px}.hero p{color:#d0dbea;line-height:1.6;max-width:570px}.hero-mark{width:120px;height:120px;border:3px solid #d4a938;border-radius:50%;display:grid;place-items:center;font-size:52px;margin-left:auto;background:#0b2036}
+.eyebrow{color:var(--gold);font-weight:bold;font-size:12px;letter-spacing:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+.stat,.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px}
+.stat small{color:var(--muted);font-weight:bold}.stat strong{display:block;font-size:30px;margin:12px 0}
+h2{font-size:22px;margin:24px 0 12px}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+input,select{width:100%;padding:12px;border-radius:9px;border:1px solid var(--line);background:#091a2c;color:white;margin:6px 0 12px}
+label{font-size:13px;color:#c6d3e2;display:block}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:#18334f;color:white;font-weight:bold}
+button:disabled{opacity:.55;cursor:not-allowed}button.danger{background:#542b36;border-color:#824453}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.item{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center}.item:last-child{border:0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}th{color:var(--gold)}
+.notice{padding:12px;border-radius:10px;background:#172f49;color:#d5e3f2;margin:12px 0;font-size:13px;line-height:1.5}
+.hidden{display:none!important}.empty{padding:18px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:10px}
+.rosters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.team-crest{width:58px;height:58px;object-fit:contain;border-radius:12px;background:#fff;padding:4px;border:1px solid var(--gold);flex-shrink:0}
+.team-list-crest{width:42px;height:42px;object-fit:contain;border-radius:9px;background:#fff;padding:3px;vertical-align:middle;margin-right:10px}
+.roster-team{width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;color:var(--text)}
+.team-heading{display:flex;align-items:center;gap:12px}.roster-content{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.roster-team.open .roster-content{display:block}
+.roster-player{padding:10px 0;border-bottom:1px solid var(--line)}.player-stats{font-size:13px;color:var(--muted);margin-top:4px}
+.stats-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.lock{position:fixed;right:18px;bottom:18px;width:52px;height:52px;border-radius:50%;background:#d5a82e;color:#111;border:2px solid #ffe08a;font-size:22px;z-index:10;box-shadow:0 5px 18px #0008}
+.modal{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}.modal-box{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:30px 10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.hero{padding:20px}.hero-mark{width:82px;height:82px;font-size:36px}.hero p{font-size:14px}nav{top:72px}}
+</style>
+</head>
+<body>
+<header><div class="brand">CAMPEONATO CALDEIRÃO</div><div class="season">TEMPORADA 2026</div></header>
+<nav id="mainNav">
+<button class="active" data-page="inicio">Início</button>
+<button data-page="equipes">Equipes</button>
+<button data-page="elencos">Elencos</button>
+<button data-page="jogadores">Jogadores</button>
+<button data-page="partidas">Partidas</button>
+<button data-page="tabela">Classificação</button>
+<button data-page="artilharia">Artilharia</button>
+</nav>
+<main>
+<section id="inicio" class="page">
+<div class="hero"><div><div class="eyebrow">FUTEBOL • COMPETIÇÃO • EMOÇÃO</div><h1>Campeonato<br>Caldeirão 2026</h1><p>Acompanhe equipes, elencos, partidas, classificação e artilharia do campeonato.</p></div><div class="hero-mark">⚽</div></div>
+<div class="stats">
+<div class="stat"><small>EQUIPES</small><strong id="countTeams">0</strong></div>
+<div class="stat"><small>JOGADORES</small><strong id="countPlayers">0</strong></div>
+<div class="stat"><small>PARTIDAS</small><strong id="countMatches">0</strong></div>
+<div class="stat"><small>GOLS</small><strong id="countGoals">0</strong></div>
+</div>
+<div class="grid"><div class="card"><h2>Próximas partidas</h2><div id="nextGames" class="empty">Carregando...</div></div><div class="card"><h2>Sobre o campeonato</h2><p class="muted">Consulte as informações oficiais do Campeonato Caldeirão 2026. O acesso administrativo é restrito.</p></div></div>
+</section>
+<section id="equipes" class="page hidden">
+<h2>Cadastro de equipes</h2><div class="notice admin-only">Cadastre as equipes participantes. O ID é criado automaticamente.</div>
+<div class="card admin-only"><form id="teamForm"><label>Nome da equipe</label><input id="teamName" required placeholder="Ex.: União FC"><label>Escudo da equipe</label><input id="teamShieldFile" type="file" accept="image/*"><small class="muted">Imagem de até 500 KB.</small><label>Ou endereço da imagem (opcional)</label><input id="teamShield" placeholder="https://..."><button class="primary">Salvar equipe</button></form></div>
+<div class="card" style="margin-top:14px"><h3>Equipes cadastradas</h3><div id="teamsList" class="empty">Carregando...</div></div>
+</section>
+<section id="elencos" class="page hidden"><h2>Elencos das equipes</h2><p class="muted">Selecione uma equipe para consultar seus jogadores.</p><div id="rostersList" class="rosters-grid"></div></section>
+<section id="jogadores" class="page hidden">
+<h2>Cadastro de jogadores</h2><div class="card admin-only"><form id="playerForm"><label>Nome do jogador</label><input id="playerName" required placeholder="Nome completo"><label>Equipe</label><select id="playerTeam" required><option value="">Selecione a equipe</option></select><div class="grid"><div><label>Número da camisa</label><input id="playerNumber" type="number" min="0" placeholder="Ex.: 10"></div><div><label>Posição</label><select id="playerPosition"><option>Goleiro</option><option>Defensor</option><option>Meio-campo</option><option>Atacante</option></select></div></div><button class="primary">Salvar jogador</button></form></div>
+<div class="card" style="margin-top:14px"><h3>Jogadores cadastrados</h3><div id="playersList" class="empty">Carregando...</div></div>
+</section>
+<section id="partidas" class="page hidden">
+<h2>Cadastro de partidas</h2><div class="card admin-only"><form id="matchForm"><div class="grid"><div><label>Equipe da casa</label><select id="homeTeam" required></select></div><div><label>Equipe visitante</label><select id="awayTeam" required></select></div></div><div class="grid"><div><label>Data</label><input id="matchDate" type="date"></div><div><label>Horário</label><input id="matchTime" type="time"></div></div><button class="primary">Agendar partida</button></form></div>
+<div class="card" style="margin-top:14px"><h3>Partidas cadastradas</h3><div id="matchesList" class="empty">Carregando...</div></div>
+</section>
+<section id="tabela" class="page hidden"><h2>Classificação</h2><div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Equipe</th><th>PTS</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody id="standings"></tbody></table></div></section>
+<section id="artilharia" class="page hidden"><h2>Artilharia</h2><div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Jogador</th><th>Equipe</th><th>Gols</th></tr></thead><tbody id="scorers"></tbody></table></div></section>
+<div class="notice" id="connection">Conectando ao Firebase...</div>
+</main>
+<footer>Campeonato Caldeirão 2026</footer>
+<button class="lock" id="openLogin" aria-label="Área administrativa">🔒</button>
+<div id="loginModal" class="modal hidden"><div class="modal-box"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Área administrativa</h2><button type="button" id="closeLogin">✕</button></div><form id="loginForm"><label>E-mail</label><input id="loginEmail" type="email" autocomplete="username" required><label>Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="primary" style="width:100%">Entrar</button></form><p id="loginError" class="muted"></p></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDEk9cxWDXELD_BVqLR2-y0W65zwFhwHhY",
+  authDomain: "campeonato-caldeirao-202-5914d.firebaseapp.com",
+  projectId: "campeonato-caldeirao-202-5914d",
+  storageBucket: "campeonato-caldeirao-202-5914d.firebasestorage.app",
+  messagingSenderId: "1050505773332",
+  appId: "1:1050505773332:web:7c7123f16885ebe2298201",
+  measurementId: "G-H79NXWLN7N"
+};
+const ADMIN_UID = "nOTZmY54b5b0m4ccKL1lwymhUT02";
+let db, auth, teams=[], players=[], matches=[], isAdmin=false;
+const $=id=>document.getElementById(id);
+const connection=(msg,bad=false)=>{const el=$('connection');el.textContent=msg;el.style.background=bad?'#542b36':'#172f49';};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));$(id)?.classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+$('openLogin').addEventListener('click',()=>$('loginModal').classList.remove('hidden'));
+$('closeLogin').addEventListener('click',()=>$('loginModal').classList.add('hidden'));
+function updateAdminUI(){document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));$('openLogin').textContent=isAdmin?'🔓':'🔒';}
+function teamName(id){return teams.find(t=>t.id===id)?.nome||'Equipe não encontrada';}
+function refreshSelects(){['playerTeam','homeTeam','awayTeam'].forEach(id=>{const el=$(id),old=el.value;el.innerHTML='<option value="">Selecione a equipe</option>'+teams.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('');if(teams.some(t=>t.id===old))el.value=old;});}
+async function imageData(file){if(!file)return '';if(file.size>500*1024)throw new Error('A imagem deve ter no máximo 500 KB.');return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});}
+function render(){
+ $('countTeams').textContent=teams.length;$('countPlayers').textContent=players.length;$('countMatches').textContent=matches.length;
+ $('countGoals').textContent=matches.reduce((a,m)=>a+(Number(m.gols_casa)||0)+(Number(m.gols_fora)||0),0);
+ $('teamsList').innerHTML=teams.length?teams.map(t=>`<div class="item"><span>${t.escudo?`<img class="team-list-crest" src="${esc(t.escudo)}" alt="">`:''}<b>${esc(t.nome)}</b></span>${isAdmin?`<button class="danger" onclick="deleteDoc('equipes','${t.id}')">Excluir</button>`:''}</div>`).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
+ $('playersList').innerHTML=players.length?players.map(p=>`<div class="item"><span><b>${esc(p.nome)}</b><br><small class="muted">${esc(teamName(p.equipe_id))} · Camisa ${esc(p.numero_camisa??'—')}</small></span>${isAdmin?`<button class="danger" onclick="deleteDoc('jogadores','${p.id}')">Excluir</button>`:''}</div>`).join(''):'<div class="empty">Nenhum jogador cadastrado.</div>';
+ $('rostersList').innerHTML=teams.length?teams.map(t=>{const squad=players.filter(p=>p.equipe_id===t.id);return `<div class="roster-team" id="roster-${t.id}"><button type="button" style="all:unset;display:block;width:100%;cursor:pointer" onclick="toggleRoster('${t.id}')"><div class="team-heading">${t.escudo?`<img class="team-crest" src="${esc(t.escudo)}" alt="">`:''}<div><h3>${esc(t.nome)}</h3><small>${squad.length} jogador(es) · Toque para ver</small></div></div></button><div class="roster-content">${squad.length?squad.map(p=>`<div class="roster-player"><b>${esc(p.nome)}</b><div class="player-stats">Camisa ${esc(p.numero_camisa??'—')} · ${esc(p.posicao||'Posição não informada')}</div><div class="player-stats">⚽ ${Number(p.gols)||0} gols · 🟨 ${Number(p.cartoes_amarelos)||0} amarelos · 🟥 ${Number(p.cartoes_vermelhos)||0} vermelhos · 🎯 ${Number(p.assistencias)||0} assistências</div>${isAdmin?`<div class="stats-editor"><label>Gols<input type="number" min="0" id="g-${p.id}" value="${Number(p.gols)||0}"></label><label>Amarelos<input type="number" min="0" id="y-${p.id}" value="${Number(p.cartoes_amarelos)||0}"></label><label>Vermelhos<input type="number" min="0" id="r-${p.id}" value="${Number(p.cartoes_vermelhos)||0}"></label><label>Assistências<input type="number" min="0" id="a-${p.id}" value="${Number(p.assistencias)||0}"></label><label>Jogos<input type="number" min="0" id="j-${p.id}" value="${Number(p.jogos)||0}"></label></div><button class="primary" style="margin-top:8px" onclick="savePlayerStats('${p.id}')">Salvar alterações</button>`:''}</div>`).join(''):'<div class="empty">Nenhum jogador cadastrado nesta equipe.</div>'}</div></div>`;}).join(''):'<div class="empty">Nenhuma equipe cadastrada.</div>';
+ $('matchesList').innerHTML=matches.length?matches.map(m=>`<div class="item"><span><b>${esc(teamName(m.equipe_casa))} x ${esc(teamName(m.equipe_fora))}</b><br><small class="muted">${esc(m.data||'Data não definida')} ${esc(m.horario||'')}</small></span><span class="row">${m.status==='finalizada'?`${m.gols_casa} x ${m.gols_fora}`:'Agendada'}${isAdmin?`<button onclick="finishMatch('${m.id}')">Resultado</button><button class="danger" onclick="deleteDoc('partidas','${m.id}')">Excluir</button>`:''}</span></div>`).join(''):'<div class="empty">Nenhuma partida cadastrada.</div>';
+ const rows=teams.map(t=>{let s={id:t.id,nome:t.nome,pts:0,j:0,v:0,e:0,d:0,gp:0,gc:0};matches.filter(m=>m.status==='finalizada'&&(m.equipe_casa===t.id||m.equipe_fora===t.id)).forEach(m=>{const home=m.equipe_casa===t.id,gf=Number(home?m.gols_casa:m.gols_fora)||0,ga=Number(home?m.gols_fora:m.gols_casa)||0;s.j++;s.gp+=gf;s.gc+=ga;if(gf>ga){s.v++;s.pts+=3}else if(gf===ga){s.e++;s.pts++}else s.d++;});return s;}).sort((a,b)=>b.pts-a.pts||((b.gp-b.gc)-(a.gp-a.gc))||b.gp-a.gp);
+ $('standings').innerHTML=rows.map((s,i)=>`<tr><td>${i+1}</td><td>${esc(s.nome)}</td><td>${s.pts}</td><td>${s.j}</td><td>${s.v}</td><td>${s.e}</td><td>${s.d}</td><td>${s.gp}</td><td>${s.gc}</td><td>${s.gp-s.gc}</td></tr>`).join('')||'<tr><td colspan="10">Nenhuma equipe cadastrada.</td></tr>';
+ $('scorers').innerHTML=players.slice().sort((a,b)=>(Number(b.gols)||0)-(Number(a.gols)||0)).map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.nome)}</td><td>${esc(teamName(p.equipe_id))}</td><td>${Number(p.gols)||0}</td></tr>`).join('')||'<tr><td colspan="4">Nenhum jogador cadastrado.</td></tr>';
+ const upcoming=matches.filter(m=>m.status!=='finalizada').slice(0,5);$('nextGames').innerHTML=upcoming.length?upcoming.map(m=>`<div class="item"><b>${esc(teamName(m.equipe_casa))} x ${esc(teamName(m.equipe_fora))}</b><small class="muted">${esc(m.data||'')}</small></div>`).join(''):'Os jogos cadastrados serão exibidos aqui.';
+ refreshSelects();
+}
+window.toggleRoster=id=>{$('roster-'+id)?.classList.toggle('open');};
+window.deleteDoc=async(col,id)=>{if(!isAdmin)return;if(!confirm('Confirma excluir este registro?'))return;try{await db.collection(col).doc(id).delete();await loadAll();}catch(e){alert('Erro ao excluir: '+e.message);}};
+window.savePlayerStats=async id=>{if(!isAdmin)return;const vals={gols:$('g-'+id).value,cartoes_amarelos:$('y-'+id).value,cartoes_vermelhos:$('r-'+id).value,assistencias:$('a-'+id).value,jogos:$('j-'+id).value};const data={};for(const [k,v] of Object.entries(vals)){if(!Number.isInteger(Number(v))||Number(v)<0){alert('Use números inteiros iguais ou maiores que zero.');return;}data[k]=Number(v);}try{await db.collection('jogadores').doc(id).update(data);await loadAll();alert('Estatísticas atualizadas.');}catch(e){alert(e.message);}};
+window.finishMatch=async id=>{if(!isAdmin)return;const m=matches.find(x=>x.id===id);if(!m)return;const a=prompt('Gols de '+teamName(m.equipe_casa));if(a===null)return;const b=prompt('Gols de '+teamName(m.equipe_fora));if(b===null)return;if(!/^\d+$/.test(a)||!/^\d+$/.test(b)){alert('Informe gols como números inteiros.');return;}try{await db.collection('partidas').doc(id).update({gols_casa:Number(a),gols_fora:Number(b),status:'finalizada'});await loadAll();}catch(e){alert('Erro ao salvar resultado: '+e.message);}};
+async function loadAll(){if(!db)return;connection('Carregando dados do campeonato...');try{const [t,p,m]=await Promise.all([db.collection('equipes').get(),db.collection('jogadores').get(),db.collection('partidas').get()]);teams=t.docs.map(d=>({id:d.id,...d.data()}));players=p.docs.map(d=>({id:d.id,...d.data()}));matches=m.docs.map(d=>({id:d.id,...d.data()}));render();connection('Conectado ao Firebase. Dados carregados.');}catch(e){connection('Erro ao carregar dados: '+e.message,true);console.error(e);}}
+$('teamForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;try{const file=$('teamShieldFile').files[0],shield=file?await imageData(file):$('teamShield').value.trim();await db.collection('equipes').add({nome:$('teamName').value.trim(),escudo:shield,criado_em:firebase.firestore.FieldValue.serverTimestamp()});e.target.reset();await loadAll();alert('Equipe cadastrada!');}catch(err){alert('Não foi possível cadastrar: '+err.message);}});
+$('playerForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;try{await db.collection('jogadores').add({nome:$('playerName').value.trim(),equipe_id:$('playerTeam').value,numero_camisa:$('playerNumber').value?Number($('playerNumber').value):null,posicao:$('playerPosition').value,gols:0,cartoes_amarelos:0,cartoes_vermelhos:0,assistencias:0,jogos:0});e.target.reset();await loadAll();alert('Jogador cadastrado!');}catch(err){alert('Não foi possível cadastrar: '+err.message);}});
+$('matchForm').addEventListener('submit',async e=>{e.preventDefault();if(!isAdmin)return;const home=$('homeTeam').value,away=$('awayTeam').value;if(!home||!away||home===away){alert('Selecione duas equipes diferentes.');return;}try{await db.collection('partidas').add({equipe_casa:home,equipe_fora:away,data:$('matchDate').value,horario:$('matchTime').value,status:'agendada',gols_casa:null,gols_fora:null});e.target.reset();await loadAll();alert('Partida agendada!');}catch(err){alert('Não foi possível agendar: '+err.message);}});
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{const cred=await auth.signInWithEmailAndPassword($('loginEmail').value.trim(),$('loginPassword').value);if(cred.user.uid!==ADMIN_UID){await auth.signOut();throw new Error('Esta conta não tem permissão de administrador.');}$('loginModal').classList.add('hidden');$('loginPassword').value='';}catch(err){$('loginError').textContent='Não foi possível entrar: '+err.message;}});
+async function start(){try{if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);db=firebase.firestore();auth=firebase.auth();auth.onAuthStateChanged(user=>{isAdmin=!!user&&user.uid===ADMIN_UID;updateAdminUI();if(user&&!isAdmin)auth.signOut();});await loadAll();}catch(e){connection('Falha ao iniciar Firebase: '+e.message,true);console.error(e);}}
+updateAdminUI();start();
+</script>
+</body>
+</html>
